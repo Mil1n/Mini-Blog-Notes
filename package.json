@@ -1,0 +1,9 @@
+{
+  "name": "mini-blog-notes",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "echo 'Run frontend and backend separately'",
+    "lint": "echo 'configure workspace lint'"
+  }
+}
