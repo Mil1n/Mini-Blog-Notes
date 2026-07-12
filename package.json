@@ -1,9 +1,14 @@
 {
   "name": "mini-blog-notes",
   "private": true,
-  "workspaces": ["frontend", "backend"],
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "echo 'Run frontend and backend separately'",
-    "lint": "echo 'configure workspace lint'"
+    "dev": "echo \"Run frontend and backend separately\"",
+    "lint": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "build": "npm run build --workspaces"
   }
 }
