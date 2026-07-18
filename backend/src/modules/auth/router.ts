@@ -2,7 +2,9 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { getJwtSecret } from '../../config.js';
 import { prisma } from '../../db.js';
+import { requireAuth, type AuthenticatedRequest } from './middleware.js';
 
 const router = Router();
 const credentialsSchema = z.object({
@@ -12,10 +14,9 @@ const credentialsSchema = z.object({
 const registerSchema = credentialsSchema.extend({
   username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/),
 });
-const jwtSecret = () => process.env.JWT_SECRET || 'dev-secret-change-me';
 
 const signToken = (user: { id: string; email: string; username: string }) =>
-  jwt.sign({ sub: user.id, email: user.email, username: user.username }, jwtSecret(), { expiresIn: '7d' });
+  jwt.sign({ sub: user.id, email: user.email, username: user.username }, getJwtSecret(), { expiresIn: '7d' });
 
 const publicUser = (user: { id: string; email: string; username: string; createdAt: Date }) => ({
   id: user.id,
@@ -50,5 +51,18 @@ router.post('/login', async (req, res, next) => {
     return next(error);
   }
 });
+
+router.get('/me', requireAuth, async (req, res, next) => {
+  try {
+    const authReq = req as unknown as AuthenticatedRequest;
+    const user = await prisma.user.findUnique({ where: { id: authReq.user.id } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json({ user: publicUser(user) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/logout', (_req, res) => res.status(204).send());
 
 export const authRouter = router;

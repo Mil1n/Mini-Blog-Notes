@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../../config.js';
 
 export type AuthUser = { id: string; email: string; username: string };
 export type AuthenticatedRequest = Request & { user: AuthUser };
@@ -12,7 +13,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   if (!token) return res.status(401).json({ message: 'Missing bearer token' });
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret-change-me') as TokenPayload;
+    const payload = jwt.verify(token, getJwtSecret()) as TokenPayload;
     (req as AuthenticatedRequest).user = { id: payload.sub, email: payload.email, username: payload.username };
     return next();
   } catch {

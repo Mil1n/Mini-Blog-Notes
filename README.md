@@ -6,13 +6,13 @@
 
 - Frontend на React + TypeScript с feature-структурой модулей.
 - Backend на Node.js + Express + Prisma.
-- JWT-регистрация и логин с bcrypt-хэшированием паролей.
+- JWT-регистрация, логин, `/me` и клиентский logout с bcrypt-хэшированием паролей.
 - CRUD API заметок с правами доступа владельца.
-- Создание, список, поиск, pin/delete/favorite/draft.
+- Создание, список, поиск, pin/delete/favorite/draft, rollback для optimistic actions.
 - Поддержка Markdown и live preview в редакторе.
 - Черновик с автосохранением и восстановлением из `localStorage`.
 - Prisma-схема для `User` и `Note`, seed-данные для demo-аккаунта.
-- Базовые typecheck/build/test quality gates.
+- Базовые typecheck/build/test quality gates и unit-тесты backend/frontend.
 
 ## 🧱 Технологический стек
 
@@ -32,6 +32,18 @@
 - JWT auth
 - bcryptjs
 - zod validation
+
+
+## 📂 Структура проекта
+
+```text
+frontend/src/app       # router и глобальные stores
+frontend/src/modules   # product modules: auth, notes, users
+frontend/src/shared    # api client и shared utils
+backend/src/modules    # Express modules, schemas, services
+backend/prisma         # Prisma schema и seed
+_tests / backend tests # Vitest unit tests
+```
 
 ## ⚙️ Быстрый старт
 
@@ -78,6 +90,8 @@ password: password
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
 - `GET /api/notes`
 - `POST /api/notes`
 - `PATCH /api/notes/:id`
@@ -99,7 +113,7 @@ npm run build --workspaces
 
 ## 📈 Дальнейшие идеи
 
-1. Refresh tokens и logout endpoint.
+1. Refresh tokens и server-side token revocation.
 2. PostgreSQL + отдельные таблицы для тегов.
 3. Full-text search через PostgreSQL `tsvector` или Meilisearch.
 4. Архив заметок вместо физического удаления.
