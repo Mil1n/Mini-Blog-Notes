@@ -1,19 +1,18 @@
 # ✨ Mini Blog / Notes
 
-Современное fullstack-приложение для заметок и коротких постов: с чистой архитектурой, приятным UX и заделом под production.
+Современное fullstack-приложение для заметок и коротких постов: React + TypeScript frontend, Express + Prisma backend, Markdown, черновики, теги, категории и JWT-аутентификация.
 
----
+## 🚀 Что реализовано
 
-## 🚀 Что уже реализовано
-
-- **Frontend** на React + TypeScript с feature-структурой модулей.
-- **Backend** на Node.js + Express + Prisma.
-- Базовый сценарий заметок: создание, список, поиск, pin/delete.
-- Поддержка **Markdown** для контента заметок.
-- Черновик с **автосохранением в localStorage**.
-- Готовая Prisma-схема для `User` и `Note`.
-
----
+- Frontend на React + TypeScript с feature-структурой модулей.
+- Backend на Node.js + Express + Prisma.
+- JWT-регистрация, логин, `/me` и клиентский logout с bcrypt-хэшированием паролей.
+- CRUD API заметок с правами доступа владельца.
+- Создание, список, поиск, pin/delete/favorite/draft, rollback для optimistic actions.
+- Поддержка Markdown и live preview в редакторе.
+- Черновик с автосохранением и восстановлением из `localStorage`.
+- Prisma-схема для `User` и `Note`, seed-данные для demo-аккаунта.
+- Базовые typecheck/build/test quality gates и unit-тесты backend/frontend.
 
 ## 🧱 Технологический стек
 
@@ -29,51 +28,30 @@
 ### Backend
 - Node.js + Express
 - Prisma ORM
-- SQLite (по умолчанию, легко переключить на PostgreSQL)
-- JWT-ready auth skeleton
+- SQLite по умолчанию
+- JWT auth
+- bcryptjs
+- zod validation
 
-### DX / Infra
-- Monorepo через npm workspaces
-- Подготовленная структура под ESLint/Prettier/CI
-
----
 
 ## 📂 Структура проекта
 
 ```text
-.
-├── frontend/
-│   └── src/
-│       ├── app/
-│       │   ├── router/
-│       │   └── store/
-│       ├── modules/
-│       │   ├── auth/
-│       │   ├── notes/
-│       │   └── users/
-│       └── shared/
-├── backend/
-│   ├── prisma/
-│   └── src/
-│       └── modules/
-│           ├── auth/
-│           └── notes/
-└── tests/
+frontend/src/app       # router и глобальные stores
+frontend/src/modules   # product modules: auth, notes, users
+frontend/src/shared    # api client и shared utils
+backend/src/modules    # Express modules, schemas, services
+backend/prisma         # Prisma schema и seed
+_tests / backend tests # Vitest unit tests
 ```
 
----
-
 ## ⚙️ Быстрый старт
-
-### 1) Установка зависимостей
 
 ```bash
 npm install
 ```
 
-### 2) Настройка переменных окружения
-
-Создайте файл `backend/.env`:
+Создайте `backend/.env`:
 
 ```env
 PORT=4000
@@ -81,89 +59,63 @@ DATABASE_URL="file:./dev.db"
 JWT_SECRET="change-me"
 ```
 
-### 3) Запуск backend
+Подготовьте Prisma Client и базу:
+
+```bash
+npm run prisma:generate --workspace backend
+npm run prisma:migrate --workspace backend
+npm run seed --workspace backend
+```
+
+Запуск backend:
 
 ```bash
 npm run dev --workspace backend
 ```
 
-### 4) Запуск frontend
+Запуск frontend:
 
 ```bash
 npm run dev --workspace frontend
 ```
 
----
+Demo-пользователь после seed:
 
-## 🔌 Примеры API-запросов
-
-### Регистрация
-
-```bash
-curl -X POST http://localhost:4000/api/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"u@u.com","username":"user","password":"password"}'
+```text
+email: demo@example.com
+password: password
 ```
 
-### Логин
+## 🔌 API
 
-```bash
-curl -X POST http://localhost:4000/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"u@u.com","password":"password"}'
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `POST /api/auth/logout`
+- `GET /api/notes`
+- `POST /api/notes`
+- `PATCH /api/notes/:id`
+- `DELETE /api/notes/:id`
+
+Для `/api/notes` нужен заголовок:
+
+```http
+Authorization: Bearer <token>
 ```
 
-### Получение заметок
+## 🧪 Проверки
 
 ```bash
-curl http://localhost:4000/api/notes
+npm run typecheck --workspaces
+npm run test --workspaces
+npm run build --workspaces
 ```
 
-### Создание заметки
+## 📈 Дальнейшие идеи
 
-```bash
-curl -X POST http://localhost:4000/api/notes \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"Hello","content":"# post"}'
-```
-
----
-
-## 🎨 UI/UX-концепция
-
-- **Mobile-first** вёрстка.
-- Минималистичные карточки заметок.
-- Markdown-рендеринг в ленте.
-- Базовые микро-анимации появления элементов.
-- Основа для светлой/тёмной темы.
-
----
-
-## 🧪 Тестирование
-
-В проект добавлен пример unit-теста (`tests/filterNotes.test.ts`) для утилиты фильтрации заметок.
-
-Запуск тестов после установки зависимостей:
-
-```bash
-npm run test --workspace frontend
-npm run test --workspace backend
-```
-
----
-
-## 📈 Идеи для масштабирования
-
-1. Выделить backend-слои: `controllers / use-cases / repositories`.
-2. Добавить полноценную JWT-аутентификацию с refresh token.
-3. Реализовать синхронизацию черновиков между устройствами.
-4. Подключить full-text search (PostgreSQL `tsvector` или Meilisearch).
-5. Добавить Redis-кэш и очередь фоновых задач.
-6. Вынести медиа в S3-совместимое хранилище.
-7. Настроить CI/CD, линтинг, форматирование и quality gates.
-
----
-
-## 🛠️ Статус
-
-Это **качественный стартовый каркас** проекта. Он уже удобен для дальнейшей продуктовой разработки, но требует доработки бизнес-логики (auth, полноценный CRUD, синхронизация, права доступа) для production-релиза.
+1. Refresh tokens и server-side token revocation.
+2. PostgreSQL + отдельные таблицы для тегов.
+3. Full-text search через PostgreSQL `tsvector` или Meilisearch.
+4. Архив заметок вместо физического удаления.
+5. CI/CD с GitHub Actions.
+6. S3-совместимые вложения и изображения.
